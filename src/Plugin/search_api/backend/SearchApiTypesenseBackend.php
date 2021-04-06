@@ -319,7 +319,6 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    *
    * @todo: Adding new nodes by AJAX is broken, so:
    *   - unbreak it,
-   *   - uncomment $form['nodes']['actions']
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form['#tree'] = TRUE;
@@ -409,37 +408,37 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
       ];
     }
 
-    // $form['nodes']['actions'] = [
-    //   '#type' => 'actions',
-    // ];
+    $form['nodes']['actions'] = [
+      '#type' => 'actions',
+    ];
 
-    // $form['nodes']['actions']['add_node'] = [
-    //   '#type' => 'submit',
-    //   '#value' => $this->t('Add another node'),
-    //   '#name' => 'add_node',
-    //   '#submit' => ['::addNode'],
-    //   '#ajax' => [
-    //     // 'callback' => '::addNodeCallback',
-    //     'callback' => [$this, 'addNodeCallback'],
-    //     // 'callback' => [$form_state->getBuildInfo()['callback_object'], 'addNodeCallback'],
-    //     'wrapper' => 'nodes-fieldset-wrapper',
-    //   ],
-    // ];
+    $form['nodes']['actions']['add_node'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Add another node'),
+      '#name' => 'add_node',
+      '#submit' => ['::addNode'],
+      '#ajax' => [
+        // 'callback' => '::addNodeCallback',
+        'callback' => [$this, 'addNodeCallback'],
+        // 'callback' => [$form_state->getBuildInfo()['callback_object'], 'addNodeCallback'],
+        'wrapper' => 'nodes-fieldset-wrapper',
+      ],
+    ];
 
-    // if ($num_nodes > 1) {
-    //   $form['nodes']['actions']['remove_node'] = [
-    //     '#type' => 'submit',
-    //     '#value' => $this->t('Remove node'),
-    //     '#name' => 'remove_node',
-    //     '#submit' => ['::removeNode'],
-    //     '#ajax' => [
-    //       // 'callback' => '::addNodeCallback',
-    //       'callback' => [$this, 'addNodeCallback'],
-    //       // 'callback' => [$form_state->getBuildInfo()['callback_object'], 'addNodeCallback'],
-    //       'wrapper' => 'nodes-fieldset-wrapper',
-    //     ],
-    //   ];
-    // }
+    if ($num_nodes > 1) {
+      $form['nodes']['actions']['remove_node'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Remove node'),
+        '#name' => 'remove_node',
+        '#submit' => ['::removeNode'],
+        '#ajax' => [
+          // 'callback' => '::addNodeCallback',
+          'callback' => [$this, 'addNodeCallback'],
+          // 'callback' => [$form_state->getBuildInfo()['callback_object'], 'addNodeCallback'],
+          'wrapper' => 'nodes-fieldset-wrapper',
+        ],
+      ];
+    }
 
     $form['connection_timeout_seconds'] = [
       '#type' => 'textfield',
