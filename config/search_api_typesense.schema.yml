@@ -1,0 +1,26 @@
+search_api_typesense.settings:
+  type: config_object
+  label: 'Search API Typesense configuration'
+  mapping:
+    ro_api_key:
+      type: text
+      label: 'Read-only API key'
+    rw_api_key:
+      type: text
+      label: 'Read-write API key'
+    connection_timeout_seconds:
+      type: integer
+      label: 'Connection timeout (seconds)'
+    nodes:
+      type: mapping
+      label: 'Typesense nodes'
+      mapping:
+        host:
+          type: text
+          label: 'Host'
+        port:
+          type: text
+          label: 'Port'
+        protocol:
+          type: text
+          label: 'Protocol'

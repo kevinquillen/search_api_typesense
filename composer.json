@@ -1,0 +1,23 @@
+{
+    "name": "drupal/search_api_typesense",
+    "description": "Provides Typesense backend to Search API.",
+    "type": "drupal-module",
+    "keywords": ["Drupal", "Search", "Search API", "Typesense"],
+    "homepage": "https://drdupal.org/project/search_api_typesense",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "Christopher Torgalson",
+            "email": "manager@bedlamhotel.com"
+        }
+    ],
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/search_api_typesense",
+        "source": "https://git.drupalcode.org/project/search_api_typesense"
+    },
+    "require": {
+        "drupal/core": "^8.4 || ^9",
+        "php-http/curl-client": "^2.2",
+        "typesense/typesense-php": "^4.5"
+    }
+}

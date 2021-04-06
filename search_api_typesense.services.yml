@@ -1,0 +1,12 @@
+services:
+  logger.channel.search_api_typesense:
+    parent: logger.channel_base
+    arguments: ['search_api_typesense']
+
+  search_api_typesense.api:
+    class: Drupal\search_api_typesense\Api\SearchApiTypesenseService
+    arguments: ['@config.factory', '@search_api_typesense.client_factory']
+    shared: FALSE
+
+  search_api_typesense.client_factory:
+    class: Drupal\search_api_typesense\Client\SearchApiTypesenseClientFactory
