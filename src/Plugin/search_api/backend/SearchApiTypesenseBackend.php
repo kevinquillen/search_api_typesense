@@ -108,6 +108,13 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
   protected $collections;
 
   /**
+   * The auth credentials for the current server.
+   *
+   * @var array
+   */
+  protected $serverAuth;
+
+  /**
    * Constructs a Typesense backend plugin.
    *
    * @param array $configuration
@@ -141,29 +148,29 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
     $this->configFactory = $config_factory;
     $this->messenger = $messenger;
     $this->typesense = $typesense;
+    $this->server = $this->getServer();
+    $this->indexes = $this->server->getIndexes();
+    $this->serverAuth = $this->getServerAuth();
 
     // Don't initiate a connection or depend on one if we don't have enough
     // info to authorize!
-    if (isset($this->configuration['rw_api_key'], $this->configuration['nodes'], $this->configuration['connection_timeout_seconds'])) {
-      $this->typesense->setAuthorization($this->configuration['rw_api_key'], $this->configuration['nodes'], $this->configuration['connection_timeout_seconds']);
-      $this->server = $this->getServer();
-      $this->indexes = $this->server->getIndexes();
-      $this->collections = $this->typesense->retrieveCollections();
-      $this->syncIndexesAndCollections();
-
-      // ksm($this->server);
-      // ksm($this->collections);
-      // ksm([
-      //   'search',
-      //    $this->typesense->searchDocuments('sapi_typesense_index', [
-      //      'q' => 'volks',
-      //      'query_by' => 'field_vehicle_make__name,field_vehicle_model__name',
-      //    ]),
-      // ]);
-    }
-    else {
+    if ($this->serverAuth) {
       return;
     }
+
+    $this->typesense->setAuthorization($this->serverAuth['api_key'], $this->serverAuth['nodes'], $this->serverAuth['connection_timeout_seconds']);
+    $this->collections = $this->typesense->retrieveCollections();
+    $this->syncIndexesAndCollections();
+
+    // ksm($this->server);
+    // ksm($this->collections);
+    // ksm([
+    //   'search',
+    //    $this->typesense->searchDocuments('sapi_typesense_index', [
+    //      'q' => 'volks',
+    //      'query_by' => 'field_vehicle_make__name,field_vehicle_model__name',
+    //    ]),
+    // ]);
   }
 
   /**
@@ -261,6 +268,39 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
   }
 
   /**
+   * Returns Typesense auth credentials iff ALL needed values are set.
+   *
+   * @return array|FALSE
+   */
+  protected function getServerAuth($read_only = TRUE) {
+    $api_key_key = $read_only ? 'ro_api_key' : 'rw_api_key';
+
+    if (isset($this->configuration[$api_key_key], $this->configuration['nodes'], $this->configuration['connection_timeout_seconds'])) {
+      $auth = [
+        'api_key' => $this->configuration[$api_key_key],
+        'nodes' => array_filter($this->configuration['nodes'], function($key) {
+          return is_numeric($key);
+        }, ARRAY_FILTER_USE_KEY),
+        'connection_timeout_seconds' => $this->configuration['connection_timeout_seconds'],
+      ];
+    }
+
+    return $auth ?? FALSE;
+  }
+
+  /**
+   * Returns a Typesense schemas.
+   *
+   * @return array
+   *   A Typesense schema array or [].
+   */
+  protected function getSchema($collection_name) {
+    $typesense_schema_processor = $this->indexes[$collection_name]->getProcessor('typesense_schema');
+
+    return $typesense_schema_processor->getTypesenseSchema();
+  }
+
+  /**
    * Synchronizes Typesense collection schemas with Search API indexes.
    *
    * When Search API indexes are created, there's not enough information to
@@ -290,8 +330,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
       // Loop over as many indexes as we have.
       foreach ($this->indexes as $index) {
         // Get the defined schema from the processor.
-        $typesense_schema_processor = $index->getProcessor('typesense_schema');
-        $typesense_schema = $typesense_schema_processor->getTypesenseSchema();
+        $typesense_schema = $this->getSchema($index->id());
 
         // If this index has no Typesense-specific properties defined in the
         // typesense_schema processor, there's nothing we CAN do here.
@@ -509,6 +548,9 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
 
   /**
    * {@inheritdoc}
+   *
+   * @todo
+   *   - Add created/updated column(s) to index.
    */
   public function indexItems(IndexInterface $index, array $items) {
     try {
