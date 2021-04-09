@@ -249,6 +249,10 @@ class SearchApiTypesenseCommands extends DrushCommands {
     $index = reset($indexes);
     $server_auth = $index->getServerInstance()->getBackendConfig();
 
+    if (isset($server_auth['nodes']['actions'])) {
+      unset($server_auth['nodes']['actions']);
+    }
+
     if (!isset($server_auth['ro_api_key'], $server_auth['nodes'], $server_auth['connection_timeout_seconds'])) {
       // Make a fuss.
     }
