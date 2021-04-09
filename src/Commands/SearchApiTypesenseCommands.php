@@ -59,6 +59,8 @@ class SearchApiTypesenseCommands extends DrushCommands {
     'pinned-hits' => '',
     'hidden-hits' => '',
     'limit-hits' => '',
+    // These params are native to this command.
+    'debug-search' => FALSE,
   ];
 
   /**
@@ -83,11 +85,6 @@ class SearchApiTypesenseCommands extends DrushCommands {
   protected $commandHelper;
 
   /**
-   * The index that can be acted on via a command.
-   */
-  protected $typesenseIndex;
-
-  /**
    * Class constructor.
    *
    * @param \Drupal\search_api_typesense\Api\SearchApiTypesenseServiceInterface $typesenseService
@@ -105,31 +102,7 @@ class SearchApiTypesenseCommands extends DrushCommands {
 
     $this->typesense = $typesense;
     $this->entityTypeManager = $entity_type_manager;
-    $this->typesenseServers = $this->entityTypeManager->getStorage('search_api_server');
-
-    // print_r($this->typesenseServers->loadMultiple());
-    // print_r(get_class_methods($this->typesenseServers->load('sapi_ts_server')));
-
     $this->commandHelper = new CommandHelper($entity_type_manager, $module_handler, $event_dispatcher, 'dt');
-    // $this->typesenseServers = $this->getTypesenseServers();
-
-    //if (isset($this->typesense->configuration['rw_api_key'], $this->typesense->configuration['nodes'], $this-)) {
-    //}
-
-    // print_r(['loaded servers', $this->commandHelper->loadServers(['sapi_ts_server'])]);
-
-    // $this->moduleConfig = $config_factory->get('search_api_typesense.settings');
-    // print_r(get_class_methods($this->moduleConfig));
-    // print_r($this->moduleConfig->getName());
-    // print_r(['nodes', $this->moduleConfig->get('nodes')]);
-
-    // $rw_api_key = $this->configFactory->get('rw_api_key');
-    // $nodes = $this->configFactory->get('nodes');
-    // $connection_timeout_seconds = $this->configFactory->get('connection_timeout_seconds');
-
-    // if (isset($rw_api_key, $nodes, $connection_timeout_seconds)) {
-    //   $this->typesense->setAuthorization($rw_api_key, $nodes, $connection_timeout_seconds);
-    // }
   }
 
   /**
@@ -230,8 +203,10 @@ class SearchApiTypesenseCommands extends DrushCommands {
    *   A list of records to unconditionally hide from search results.
    * @option limit-hits
    *   Maximum number of hits that can be fetched from the collection. Eg: 200
+   * @option debug-search
+   *   When set, the command prints the parameters received with the results.
    *
-   * @usage search-api-typesense:query 'search_api_typesense_index' 'stark' --query-by 'company_name' --filter-by 'num_employees:>100' --sort-by 'num_employees:desc'
+   * @usage search-api-typesense:query 'search_api_typesense_index' 'stark' 'company_name' --filter-by 'num_employees:>100' --sort-by 'num_employees:desc'
    *   Searches the Typesense collection search_api_typesense_index's field
    *   'company_name' for 'stark', filters the results to documents whose
    *   'num_employees' field is > 100, and sorts by the same field in descending
@@ -256,6 +231,12 @@ class SearchApiTypesenseCommands extends DrushCommands {
    *     the same destination...
    */
   public function query($collection_name, $q, $query_by, $options = self::SEARCH_ARGUMENTS) {
+    // Do NOT pass certain options on to the Typesense service (because it
+    // won't recognize them).
+    $exclude_options = [
+      'debug-search',
+    ];
+
     // If we've arrived here, all the mandatory args have been provided. Now,
     // make sure the collection _exists_.
     $indexes = $this->commandHelper->loadIndexes([$collection_name]);
@@ -283,7 +264,7 @@ class SearchApiTypesenseCommands extends DrushCommands {
 
     // All other arguments are optional, AND need a bit of string manipulation.
     foreach ($options as $argument => $value) {
-      if (array_key_exists($argument, self::SEARCH_ARGUMENTS) && !empty($value)) {
+      if (array_key_exists($argument, self::SEARCH_ARGUMENTS) && !empty($value) && !in_array($argument, $exclude_options)) {
         $arguments[str_replace('-', '_', $argument)] = $value;
       }
     }
@@ -344,6 +325,15 @@ class SearchApiTypesenseCommands extends DrushCommands {
         '@page' => $results['page'],
         '@pages' => ceil($results['found'] / $results['request_params']['per_page']),
       ]));
+    }
+
+    // Output debug info if we've been asked for it.
+    if ($options['debug-search']) {
+      $this->output->writeln('');
+      $this->output->writeln('<info>' . dt('The following parameters were passed to typesense/typesense-php:') . '</info>');
+      $this->output->writeln('');
+      // $this->output->writeln(print_r($results['request_params'], TRUE));
+      $this->output->writeln(var_export($arguments, TRUE));
     }
   }
 
