@@ -1,0 +1,6 @@
+services:
+  search_api_typesense.commands:
+    class: \Drupal\search_api_typesense\Commands\SearchApiTypesenseCommands
+    arguments: ['@search_api_typesense.api', '@config.factory', '@entity_type.manager', '@module_handler', '@event_dispatcher']
+    tags:
+      - { name: drush.command }
