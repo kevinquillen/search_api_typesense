@@ -106,6 +106,63 @@ class SearchApiTypesenseCommands extends DrushCommands {
   }
 
   /**
+   * Gets auth info from the Backend and connects to the Typesense server.
+   *
+   * From the cli, we rely on the user to provide a collection name, so there's
+   * no possibility of doing this in the constructor.
+   *
+   * Instead, the user provides the collection name which is identical to the
+   * search_api index name. We use that to get the server, and we use that to
+   * get the connection info, and get a connection from the Typesense service.
+   *
+   * @param string $collection_name
+   *   The name of the collection that we want to query/manipulate.
+   * @param bool $read_only
+   *   Whether or not this is a read-only operation.
+   *
+   * @todo
+   *   Consider rewriting the whole Typesense service subsystem so that we can
+   *   rely on the same code here as is used in the Backend instead of largely
+   *   reproducing the backend code here, in this method.
+   */
+  protected function getTypesenseConnection($collection_name, $read_only = TRUE) {
+    // Get the set of available indexes.
+    $indexes = $this->commandHelper->loadIndexes([$collection_name]);
+
+    if (empty($indexes) || get_class($indexes[$collection_name]) !== 'Drupal\search_api\Entity\Index') {
+      $this->output->writeln('<error>' . dt('Could not find an index named @collection_name', [
+        '@collection_name' => $collection_name,
+      ]) . '</error>');
+
+      return FALSE;
+    }
+
+    // The the config from the backend this index belongs to.
+    $server_auth = $indexes[$collection_name]->getServerInstance()->getBackendConfig();
+    $api_key_key = $read_only ? 'ro_api_key' : 'rw_api_key';
+
+    if (!isset($server_auth[$api_key_key], $server_auth['nodes'], $server_auth['connection_timeout_seconds'])) {
+      $this->output->writeln('<error>' . dt('The server authorization credentials were not found or were incomplete.', [
+        '@collection_name' => $collection_name,
+      ]) . '</error>');
+
+      return FALSE;
+    }
+
+    $api_key = $server_auth[$api_key_key];
+    $nodes = array_filter($server_auth['nodes'], function($key) {
+      return is_numeric($key);
+    }, ARRAY_FILTER_USE_KEY);
+    $connection_timeout_seconds = $server_auth['connection_timeout_seconds'];
+
+    // Get the vars we need from the array.
+    // extract($server_auth);
+
+    // Connect to the server--there's no point going any further if we can't.
+    $this->typesense->setAuthorization($api_key, $nodes, $connection_timeout_seconds);
+  }
+
+  /**
    * Constructs and executes a Typesense search query and tabulates results.
    *
    * @code
@@ -237,28 +294,8 @@ class SearchApiTypesenseCommands extends DrushCommands {
       'debug-search',
     ];
 
-    // If we've arrived here, all the mandatory args have been provided. Now,
-    // make sure the collection _exists_.
-    $indexes = $this->commandHelper->loadIndexes([$collection_name]);
-
-    if (empty($indexes)) {
-      // Make a fuss.
-    }
-
-    // Get the server from the index.
-    $index = reset($indexes);
-    $server_auth = $index->getServerInstance()->getBackendConfig();
-
-    if (isset($server_auth['nodes']['actions'])) {
-      unset($server_auth['nodes']['actions']);
-    }
-
-    if (!isset($server_auth['ro_api_key'], $server_auth['nodes'], $server_auth['connection_timeout_seconds'])) {
-      // Make a fuss.
-    }
-
-    // Connect to the server--there's no point going any further if we can't.
-    $this->typesense->setAuthorization($server_auth['ro_api_key'], $server_auth['nodes'], $server_auth['connection_timeout_seconds']);
+    // Get auth credentials for THIS server.
+    $this->getTypesenseConnection($collection_name);
 
     // We'll always have a minimum of two arguments.
     $arguments = [
@@ -336,7 +373,6 @@ class SearchApiTypesenseCommands extends DrushCommands {
       $this->output->writeln('');
       $this->output->writeln('<info>' . dt('The following parameters were passed to typesense/typesense-php:') . '</info>');
       $this->output->writeln('');
-      // $this->output->writeln(print_r($results['request_params'], TRUE));
       $this->output->writeln(var_export($arguments, TRUE));
     }
   }

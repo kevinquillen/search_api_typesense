@@ -154,11 +154,12 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
 
     // Don't initiate a connection or depend on one if we don't have enough
     // info to authorize!
-    if ($this->serverAuth) {
+    if (!$this->serverAuth) {
       return;
     }
 
-    $this->typesense->setAuthorization($this->serverAuth['api_key'], $this->serverAuth['nodes'], $this->serverAuth['connection_timeout_seconds']);
+    extract($this->serverAuth);
+    $this->typesense->setAuthorization($api_key, $nodes, $connection_timeout_seconds);
     $this->collections = $this->typesense->retrieveCollections();
     $this->syncIndexesAndCollections();
 
@@ -810,6 +811,13 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    */
   public function supportsDataType($type) {
     return (strpos($type, 'typesense_') === 0);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isAvailable() {
+    return (bool) $this->typesense->retrieveDebug()['state'];
   }
 
 }
