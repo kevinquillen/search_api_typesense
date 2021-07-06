@@ -148,6 +148,10 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
     $this->configFactory = $config_factory;
     $this->messenger = $messenger;
     $this->typesense = $typesense;
+    // Don't try to get indexes from server that is not created yet.
+    if (!$this->server) {
+      return;
+    }
     $this->server = $this->getServer();
     $this->indexes = $this->server->getIndexes();
     $this->serverAuth = $this->getServerAuth();
