@@ -540,6 +540,9 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    * {@inheritdoc}
    */
   public function removeIndex($index) {
+    if ($index instanceof IndexInterface) {
+      $index = $index->id();
+    }
     try {
       $this->typesense->dropCollection($index);
     }
