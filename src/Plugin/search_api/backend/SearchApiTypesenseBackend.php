@@ -345,7 +345,10 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
 
         // If this index has no Typesense-specific properties defined in the
         // typesense_schema processor, there's nothing we CAN do here.
-        if (empty($typesense_schema['default_sorting_field']) || empty($typesense_schema['fields'])) {
+        //
+        // Typesense has made the default_sorting_field setting optional, in
+        // v0.20.0, so all we can really do is check for fields.
+        if (empty($typesense_schema['fields'])) {
           return;
         }
 

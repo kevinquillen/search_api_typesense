@@ -238,8 +238,13 @@ class TypesenseSchema extends FieldsProcessorPluginBase {
     $typesense_schema = [
       'name' => $this->configuration['schema']['name'],
       'fields' => [],
-      'default_sorting_field' => $this->configuration['schema']['default_sorting_field'],
     ];
+
+    // Typesense' default_sorting_field value is now optional. Don't add i
+    // unless we have a value for it.
+    if (isset($this->configuration['schema']['default_sorting_field']) && !empty($this->configuration['schema']['default_sorting_field'])) {
+      $typesense_schema['default_sorting_field'] = $this->configuration['schema']['default_sorting_field'];
+    }
 
     // Then add each field in turn.
     foreach ($this->configuration['schema']['fields'] as $name => $field) {
