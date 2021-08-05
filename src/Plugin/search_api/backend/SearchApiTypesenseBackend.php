@@ -286,13 +286,15 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
   protected function getServerAuth($read_only = TRUE) {
     $api_key_key = $read_only ? 'ro_api_key' : 'rw_api_key';
 
-    if (isset($this->configuration[$api_key_key], $this->configuration['nodes'], $this->configuration['connection_timeout_seconds'])) {
+    $config = $this->configFactory->get('search_api.server.' . $this->server->id())->get('backend_config');
+
+    if (isset($config[$api_key_key], $config['nodes'], $config['connection_timeout_seconds'])) {
       $auth = [
-        'api_key' => $this->configuration[$api_key_key],
-        'nodes' => array_filter($this->configuration['nodes'], function($key) {
+        'api_key' => $config[$api_key_key],
+        'nodes' => array_filter($config['nodes'], function($key) {
           return is_numeric($key);
         }, ARRAY_FILTER_USE_KEY),
-        'connection_timeout_seconds' => $this->configuration['connection_timeout_seconds'],
+        'connection_timeout_seconds' => $config['connection_timeout_seconds'],
       ];
     }
 
