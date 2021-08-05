@@ -164,8 +164,14 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
 
     extract($this->serverAuth);
     $this->typesense->setAuthorization($api_key, $nodes, $connection_timeout_seconds);
-    $this->collections = $this->typesense->retrieveCollections();
-    $this->syncIndexesAndCollections();
+    try {
+      $this->collections = $this->typesense->retrieveCollections();
+      $this->syncIndexesAndCollections();
+    }
+    catch (SearchApiTypesenseException $e) {
+      $this->logger->error($e->getMessage());
+      $this->messenger()->addError($this->t('Unable to retrieve server and/or index information.'));
+    }
 
     // ksm($this->server);
     // ksm($this->collections);
@@ -824,7 +830,12 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    * {@inheritdoc}
    */
   public function isAvailable() {
-    return (bool) $this->typesense->retrieveDebug()['state'];
+    try {
+      return (bool) $this->typesense->retrieveDebug()['state'];
+    }
+    catch (SearchApiTypesenseException $e) {
+      return FALSE;
+    }
   }
 
 }
