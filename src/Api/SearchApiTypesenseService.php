@@ -229,7 +229,7 @@ class SearchApiTypesenseService implements SearchApiTypesenseServiceInterface {
     try {
       $collection = $this->retrieveCollection($collection_name);
 
-      if ($collection && !empty($filter_condition)) {
+      if ($collection && $collection->documents && !empty($filter_condition)) {
         return $collection->documents->delete($filter_condition);
       }
 
