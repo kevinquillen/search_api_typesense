@@ -96,12 +96,11 @@ class TypesenseSchema extends FieldsProcessorPluginBase {
       '#type' => 'select',
       '#options' => $this->getSortingFieldOptions(),
       '#title' => $this->t('Default sorting field'),
-      '#description' => $this->t('This field will be used to sort results by default, and may not be set to "optional". Can only be applied to an numeric <code>int32</code> field. See the <a href=":typesense_api">Typesense API</a> for more information.', [
-        ':typesense_api' => 'https://typesense.org/docs/0.19.0/api/collections.html#arguments',
+      '#description' => $this->t('This field will be used to sort results by default. Can only be applied to an numeric <code>int32</code> field. See the <a href=":typesense_api">Typesense API</a> for more information.', [
+        ':typesense_api' => 'https://typesense.org/docs/0.21.0/guide/ranking-and-relevance.html#default-ranking-order',
       ]),
       '#empty_option' => $this->t('- Choose a numeric field -'),
       '#default_value' => $this->configuration['schema']['default_sorting_field'] ?? NULL,
-      '#required' => TRUE,
     ];
 
     $form['schema_fields'] = [
