@@ -471,11 +471,9 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
       '#type' => 'submit',
       '#value' => $this->t('Add another node'),
       '#name' => 'add_node',
-      '#submit' => ['::addNode'],
+      '#submit' => [[$this, 'addNode']],
       '#ajax' => [
-        // 'callback' => '::addNodeCallback',
         'callback' => [$this, 'addNodeCallback'],
-        // 'callback' => [$form_state->getBuildInfo()['callback_object'], 'addNodeCallback'],
         'wrapper' => 'nodes-fieldset-wrapper',
       ],
     ];
@@ -485,11 +483,10 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
         '#type' => 'submit',
         '#value' => $this->t('Remove node'),
         '#name' => 'remove_node',
-        '#submit' => ['::removeNode'],
+        '#submit' => [[$this, 'removeNode']],
+        '#limit_validation_errors' => [],
         '#ajax' => [
-          // 'callback' => '::addNodeCallback',
           'callback' => [$this, 'addNodeCallback'],
-          // 'callback' => [$form_state->getBuildInfo()['callback_object'], 'addNodeCallback'],
           'wrapper' => 'nodes-fieldset-wrapper',
         ],
       ];
@@ -514,7 +511,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    * Selects and returns the fieldset with the nodes in it.
    */
   public function addNodeCallback(array &$form, FormStateInterface $form_state) {
-    return $form['nodes'];
+    return $form['backend_config']['nodes'];
   }
 
   /**
