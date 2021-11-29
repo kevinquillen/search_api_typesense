@@ -154,7 +154,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
     }
     $this->server = $this->getServer();
     $this->indexes = $this->server->getIndexes();
-    $this->serverAuth = $this->getServerAuth();
+    $this->serverAuth = $this->getServerAuth(FALSE);
 
     // Don't initiate a connection or depend on one if we don't have enough
     // info to authorize!
