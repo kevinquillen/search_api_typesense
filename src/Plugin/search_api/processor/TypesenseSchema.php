@@ -260,7 +260,7 @@ class TypesenseSchema extends FieldsProcessorPluginBase {
 
       // The field might be optional.
       if (!empty($field['optional'])) {
-        $field_properties['option'] = TRUE;
+        $field_properties['optional'] = TRUE;
       }
 
       // Add the completed field to the list.

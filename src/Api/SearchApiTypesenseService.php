@@ -71,7 +71,7 @@ class SearchApiTypesenseService implements SearchApiTypesenseServiceInterface {
         $this->client->health->retrieve();
       }
       catch (\Exception $e) {
-        throw new SearchApiTypesenseException($e->getMessage(), $e->getCode, $e);
+        throw new SearchApiTypesenseException($e->getMessage(), $e->getCode(), $e);
       }
     }
 
@@ -114,7 +114,7 @@ class SearchApiTypesenseService implements SearchApiTypesenseServiceInterface {
       return [];
     }
     catch (\Exception $e) {
-      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode, $e);
+      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode(), $e);
     }
   }
 
@@ -138,7 +138,7 @@ class SearchApiTypesenseService implements SearchApiTypesenseServiceInterface {
       return $this->connection()->collections->create($schema);
     }
     catch (\Exception $e) {
-      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode, $e);
+      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode(), $e);
     }
   }
 
@@ -150,7 +150,7 @@ class SearchApiTypesenseService implements SearchApiTypesenseServiceInterface {
       $this->connection()->collections[$collection_name]->delete();
     }
     catch (\Exception $e) {
-      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode, $e);
+      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode(), $e);
     }
   }
 
