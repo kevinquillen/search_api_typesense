@@ -211,19 +211,17 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
     $info = [];
 
     try {
-      $collections = $this->typesense->retrieveCollections();
-
       // Loop over indexes as it's possible for an index to not yet have a
       // corresponding collection.
       $num = 1;
-      foreach ($this->indexes as $id => $index) {
-        $collection = $this->typesense->retrieveCollection($id);
+      foreach ($this->indexes as $index) {
+        $collection = $this->typesense->retrieveCollection($index->getProcessor('typesense_schema')->getConfiguration()['schema']['name']);
 
         $info[] = [
           'label' => $this->t('Typesense collection @num: name', [
             '@num' => $num,
           ]),
-          'info' => $id,
+          'info' => $index->getProcessor('typesense_schema')->getConfiguration()['schema']['name'],
         ];
 
         $collection_created = [
@@ -355,7 +353,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
         }
 
         // Check to see if the collection corresponding to this index exists.
-        $collection = $this->typesense->retrieveCollection($index->id());
+        $collection = $this->typesense->retrieveCollection($typesense_schema['name']);
 
         // If it doesn't, create it.
         if (empty($collection)) {
@@ -549,7 +547,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    */
   public function removeIndex($index) {
     if ($index instanceof IndexInterface) {
-      $index = $index->id();
+      $index = $index->getProcessor('typesense_schema')->getConfiguration()['schema']['name'];
     }
     try {
       $this->typesense->dropCollection($index);
@@ -570,7 +568,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    */
   public function indexItems(IndexInterface $index, array $items) {
     try {
-      $collection_name = $index->id();
+      $collection_name = $index->getProcessor('typesense_schema')->getConfiguration()['schema']['name'];
       $indexed_documents = [];
 
       // Loop over each indexable item.
@@ -679,7 +677,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    */
   public function deleteItems(IndexInterface $index, array $item_ids) {
     try {
-      $this->typesense->deleteDocuments($index->id(), ['id' => $item_ids]);
+      $this->typesense->deleteDocuments($index->getProcessor('typesense_schema')->getConfiguration()['schema']['name'], ['id' => $item_ids]);
     }
     catch (SearchApiTypesenseException $e) {
       $this->logger->error($e->getMessage());
@@ -719,14 +717,14 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
     try {
       if ($this->indexFieldsUpdated($index)) {
         $index->reindex();
-        $this->removeIndex($index->id());
+        $this->removeIndex($index->getProcessor('typesense_schema')->getConfiguration()['schema']['name']);
         $this->syncIndexesAndCollections();
       }
     }
     catch (SearchApiTypesenseException $e) {
       $this->logger->error($e->getMessage());
       $this->messenger()->addError($this->t('Unable to update index @index.', [
-        '@index' => $index->id(),
+        '@index' => $index->getProcessor('typesense_schema')->getConfiguration()['schema']['name'],
       ]));
     }
   }
