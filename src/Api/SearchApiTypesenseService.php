@@ -243,6 +243,80 @@ class SearchApiTypesenseService implements SearchApiTypesenseServiceInterface {
   /**
    * {@inheritdoc}
    */
+  public function createSynonym(string $collection_name, string $id, array $synonym) {
+    try {
+      $collection = $this->retrieveCollection($collection_name);
+
+      if ($collection) {
+        $created_synonym = $this->connection()->collections[$collection_name]->synonyms->upsert($id, $synonym);
+
+        return $created_synonym;
+      }
+
+      return FALSE;
+    }
+    catch (\Exception $e) {
+      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode(), $e);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function retrieveSynonym(string $collection_name, string $id) {
+    try {
+      $collection = $this->retrieveCollection($collection_name);
+
+      if ($collection) {
+        return $collection->synonyms[$id]->retrieve();
+      }
+
+      return FALSE;
+    }
+    catch (\Exception $e) {
+      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode(), $e);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function retrieveSynonyms(string $collection_name) {
+    try {
+      $collection = $this->retrieveCollection($collection_name);
+
+      if ($collection) {
+        return $collection->synonyms->retrieve();
+      }
+
+      return FALSE;
+    }
+    catch (\Exception $e) {
+      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode(), $e);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteSynonym(string $collection_name, string $id) {
+    try {
+      $collection = $this->retrieveCollection($collection_name);
+
+      if ($collection) {
+        return $collection->synonyms[$id]->delete();
+      }
+
+      return FALSE;
+    }
+    catch (\Exception $e) {
+      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode(), $e);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function retrieveHealth() {
     try {
       return $this->connection()->health->retrieve();

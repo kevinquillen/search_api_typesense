@@ -186,6 +186,74 @@ interface SearchApiTypesenseServiceInterface {
   public function deleteDocuments(string $collection_name, array $filter_condition);
 
   /**
+   * Adds a synonym to a collection, or updates an existing synonym.
+   *
+   * @param string $collection_name
+   *   The collection to create the new synonym on.
+   * @param string $id
+   *   The id of the synonym to create.
+   *
+   * @return array
+   *   The newly added/updated synonym.
+   *
+   * @see https://typesense.org/docs/0.20.0/api/synonyms.html#create-or-update-a-synonym
+   * @see https://typesense.org/docs/0.20.0/api/synonyms.html#multi-way-synonym
+   * @see https://typesense.org/docs/0.20.0/api/synonyms.html#arguments
+   *
+   * @throws \Drupal\search_api_typesense\Api\SearchApiTypesenseException
+   */
+  public function createSynonym(string $collection_name, string $id, array $synonym);
+
+  /**
+   * Retrieves a specific indexed synonym.
+   *
+   * @param string $collection_name
+   *   The name of the collection to query for the synonym.
+   * @param string $id
+   *   The id of the synonym to retrieve.
+   *
+   * @return array
+   *   The retrieved synonym.
+   *
+   * @see https://typesense.org/docs/0.20.0/api/synonyms.html#retrieve-a-synonym
+   *
+   * @throws \Drupal\search_api_typesense\Api\SearchApiTypesenseException
+   */
+  public function retrieveSynonym(string $collection_name, string $id);
+
+  /**
+   * Retrieves all indexed synonyms.
+   *
+   * @param string $collection_name
+   *   The name of the collection to query for the synonym.
+   *
+   * @return array
+   *   The retrieved synonyms.
+   *
+   * @see https://typesense.org/docs/0.20.0/api/synonyms.html#list-all-synonyms
+   *
+   * @throws \Drupal\search_api_typesense\Api\SearchApiTypesenseException
+   */
+  public function retrieveSynonyms(string $collection_name);
+
+  /**
+   * Deletes a specific indexed synonym.
+   *
+   * @param string $collection_name
+   *   The name of the collection containing the synonym.
+   * @param string $id
+   *   The id of the synonym to delete.
+   *
+   * @return array
+   *   The deleted synonym.
+   *
+   * @see https://typesense.org/docs/0.20.0/api/synonyms.html#delete-a-synonym
+   *
+   * @throws \Drupal\search_api_typesense\Api\SearchApiTypesenseException
+   */
+  public function deleteSynonym(string $collection_name, string $id);
+
+  /**
    * Returns the health of the Typesense server.
    *
    * @return array
