@@ -123,10 +123,14 @@ class SearchApiTypesenseService implements SearchApiTypesenseServiceInterface {
    */
   public function retrieveCollection(string $collection_name) {
     try {
-      return $this->connection()->collections[$collection_name]->retrieve();
+      $collection = $this->connection()->collections[$collection_name];
+      // Ensure that collection exists on the typesense server by retrieving it.
+      // This throws exception if it is not found.
+      $collection->retrieve();
+      return $collection;
     }
     catch (\Exception $e) {
-      return [];
+      return NULL;
     }
   }
 

@@ -239,9 +239,9 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
         ];
 
         if (!empty($collection)) {
-          $collection_created['info'] = date(DATE_ISO8601, $collection['created_at']);
-          $collection_documents['info'] = $collection['num_documents'] > '0'
-            ? number_format($collection['num_documents'])
+          $collection_created['info'] = date(DATE_ISO8601, $collection->retrieve()['created_at']);
+          $collection_documents['info'] = $collection->retrieve()['num_documents'] > '0'
+            ? number_format($collection->retrieve()['num_documents'])
             : $this->t('no documents have been indexed');
         }
         else {

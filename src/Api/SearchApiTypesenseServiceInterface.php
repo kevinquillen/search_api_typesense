@@ -70,7 +70,8 @@ interface SearchApiTypesenseServiceInterface {
    *
    * @param string $collection_name
    *
-   * @return Typesense\Collection
+   * @return Typesense\Collection|null
+   *   The collection, or NULL if none was found.
    *
    * @see https://typesense.org/docs/0.19.0/api/collections.html#retrieve-a-collection
    *
