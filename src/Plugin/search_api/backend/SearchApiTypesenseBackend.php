@@ -697,8 +697,8 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
     }
     catch (SearchApiTypesenseException $e) {
       $this->logger->error($e->getMessage());
-      $this->messenger()->addError($this->t('Unable to delete items @items.', [
-        '@items' => implode(', ', $item_ids),
+      $this->messenger()->addError($this->t('Unable to delete all items in the @index index.', [
+        '@index' => $index->id(),
       ]));
     }
   }
