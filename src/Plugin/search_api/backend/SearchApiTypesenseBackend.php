@@ -635,8 +635,8 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
 
       if (empty($index_fields)) {
         $typesense_fields[] = [
-          "name" => "changed",
-          "type" => "int32",
+          "name" => "id",
+          "type" => "int64",
           "facet" => FALSE,
           "optional" => FALSE,
           "index" => TRUE,
@@ -654,7 +654,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
         'fields' => $typesense_fields,
       ];
 
-      $schema['default_sorting_field'] = $default_sorting_field ?? 'changed';
+      $schema['default_sorting_field'] = $default_sorting_field ?? 'id';
 
       $this->typesense->createCollection($schema);
     } catch (SearchApiTypesenseException $e) {
