@@ -10,7 +10,7 @@ namespace Drupal\search_api_typesense\Api;
  *
  * In the Typesense package itself, the pattern is usually noun->verb(). So in
  * this interface, where we deal directly with they Typesense API, we define
- * the service' methods according the the pattern verbNoun(). With any luck
+ * the service' methods according the pattern verbNoun(). With any luck
  * this will help make it clearer what the method call is doing with the
  * underlying Typesense methods.
  */
