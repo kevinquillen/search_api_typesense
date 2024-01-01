@@ -1,23 +1,38 @@
-# Quick Start
+# Search API Typesense Integration
 
-1. Make sure you have a Typesense server running
-2. Enable the module
-3. Create a new Search API Typesense server at
+The Search API Typesense module acts as a search backend integration
+for Typesense with the Search API module.
 
-        /admin/config/search/search-api/add-server
+## Table of contents
 
-4. Configure the server credentials at
+- Requirements
+- Installation
+- Planned Functionality
+- Maintainers
 
-        /admin/config/search/search-api/server/{server_name}/edit
+## Requirements
 
-5. Create a new index on the server and add fields at
+This module is tested on Drupal 10.x.
 
-        /admin/config/search/search-api/add-index
+## Installation
 
-6. Configure the Typesense Schema processor at
+Enable the Search API Typesense module.
 
-        /admin/config/search/search-api/index/{index_name}/processors
+You can either have a running Typesense instance in the cloud running,
+or you can use DDEV locally to run Typesense using this DDEV add-on:
 
-7. Index content from the UI or cli
+https://github.com/kevinquillen/ddev-typesense
 
-**There are sure to be bugs :)**
+The add-ons README will instruct you on how to get it running and
+how to connect to the admin UI.
+
+## Planned functionality
+- Additional data type support (vector, auto, arrays, objects)
+- Synonym support
+- Views integration
+- and more
+
+## Maintainers
+
+- Kevin Quillen - [kevinquillen](https://www.drupal.org/u/kevinquillen)
+
