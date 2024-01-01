@@ -2,15 +2,14 @@
 
 namespace Drupal\search_api_typesense\Plugin\search_api\backend;
 
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Plugin\PluginFormInterface;
-use Drupal\Core\Url;
-use Drupal\search_api\DataType\DataTypeInterface;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\StringTranslation\ByteSizeMarkup;
 use Drupal\search_api\Plugin\PluginFormTrait;
-use Drupal\search_api\SearchApiException;
 use Drupal\search_api\Utility\DataTypeHelperInterface;
 use Drupal\search_api\Utility\FieldsHelperInterface;
 use Drupal\search_api_typesense\Api\SearchApiTypesenseException;
@@ -116,6 +115,13 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
   protected $serverAuth;
 
   /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
    * Constructs a Typesense backend plugin.
    *
    * @param array $configuration
@@ -124,7 +130,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    *   The plugin id.
    * @param mixed $plugin_definition
    *   A plugin definition.
-   * @param \Drupal\search_api_typesense\Api\SearchApiTypesenseServiceInterface $typesenseService
+   * @param \Drupal\search_api_typesense\Api\SearchApiTypesenseServiceInterface $typesense
    *   The Typesense service.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger interface.
@@ -138,10 +144,11 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    *   The config factory.
    * @param \Drupal\Core\Messenger\Messenger $messenger
    *   The messenger.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *  The renderer service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, SearchApiTypesenseServiceInterface $typesense, LoggerInterface $logger, FieldsHelperInterface $fields_helper, DataTypeHelperInterface $data_type_helper, LanguageManagerInterface $language_manager, ConfigFactoryInterface $config_factory, Messenger $messenger) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, SearchApiTypesenseServiceInterface $typesense, LoggerInterface $logger, FieldsHelperInterface $fields_helper, DataTypeHelperInterface $data_type_helper, LanguageManagerInterface $language_manager, ConfigFactoryInterface $config_factory, Messenger $messenger, RendererInterface $renderer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
     $this->logger = $logger;
     $this->fieldsHelper = $fields_helper;
     $this->dataTypeHelper = $data_type_helper;
@@ -149,6 +156,8 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
     $this->configFactory = $config_factory;
     $this->messenger = $messenger;
     $this->typesense = $typesense;
+    $this->renderer = $renderer;
+
     // Don't try to get indexes from server that is not created yet.
     if (!$this->server) {
       return;
@@ -190,7 +199,8 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
       $container->get('search_api.data_type_helper'),
       $container->get('language_manager'),
       $container->get('config.factory'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('renderer'),
     );
   }
 
@@ -250,7 +260,8 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
 
       $info[] = [
         'label' => $this->t('Typesense server health'),
-        'info' => $server_health['ok'] ? 'ok' : 'not ok',
+        'info' => $server_health['ok'] ? 'OK' : 'Down or unavailable',
+        'status' => $server_health['ok'] ? 'ok' : 'error',
       ];
 
       $server_debug = $this->typesense->retrieveDebug();
@@ -258,6 +269,42 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
       $info[] = [
         'label' => $this->t('Typesense server version'),
         'info' => $server_debug['version'],
+      ];
+
+      $metrics = $this->typesense->retrieveMetrics();
+
+      if (count($metrics)) {
+        $metric_info = [
+          '#theme' => 'item_list',
+          '#list_type' => 'ul',
+          '#title' => '',
+          '#items' => [],
+        ];
+
+        foreach ($metrics as $label => $value) {
+          $label = str_replace('_', ' ', $label);
+          $label = Unicode::ucfirst($label);
+
+          if (str_contains($label, 'percentage')) {
+            $value = $value . '%';
+          }
+
+          if (str_contains($label, 'bytes')) {
+            $value = ByteSizeMarkup::create($value);
+            $value = $value->render();
+          }
+
+          $metric_info['#items'][] = $label . ' - ' . $value;
+        }
+
+        $metric_info = $this->renderer->renderRoot($metric_info);
+      } else {
+        $metric_info = $this->t('Unavailable');
+      }
+
+      $info[] = [
+        'label' => $this->t('Typesense server metrics'),
+        'info' => $metric_info,
       ];
 
       return $info;

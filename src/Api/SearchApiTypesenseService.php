@@ -331,6 +331,18 @@ class SearchApiTypesenseService implements SearchApiTypesenseServiceInterface {
   /**
    * {@inheritdoc}
    */
+  public function retrieveMetrics() {
+    try {
+      return $this->connection()->getMetrics()->retrieve();
+    }
+    catch (\Exception $e) {
+      throw new SearchApiTypesenseException($e->getMessage(), $e->getCode(), $e);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function retrieveDebug() {
     try {
       return $this->connection()->debug->retrieve();
