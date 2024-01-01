@@ -4,8 +4,6 @@ namespace Drupal\search_api_typesense\Api;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\search_api_typesense\Client\SearchApiTypesenseClientFactoryInterface;
-use Http\Client\Exception\NetworkException;
-//
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
