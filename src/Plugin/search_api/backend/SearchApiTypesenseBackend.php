@@ -252,7 +252,6 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
 
         $info[] = $collection_created;
         $info[] = $collection_documents;
-
         $num++;
       }
 
@@ -306,13 +305,13 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
         'label' => $this->t('Typesense server metrics'),
         'info' => $metric_info,
       ];
-
-      return $info;
     }
     catch (SearchApiTypesenseException $e) {
       $this->logger->error($e->getMessage());
       $this->messenger()->addError($this->t('Unable to retrieve server and/or index information.'));
     }
+
+    return $info;
   }
 
   /**
