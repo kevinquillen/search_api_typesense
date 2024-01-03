@@ -294,7 +294,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
             $value = $value->render();
           }
 
-          $metric_info['#items'][] = $label . ' - ' . $value;
+          $metric_info['#items'][] = $label . ': ' . $value;
         }
 
         $metric_info = $this->renderer->renderRoot($metric_info);
