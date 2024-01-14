@@ -10,7 +10,7 @@ use Drupal\search_api\DataType\DataTypePluginBase;
  * @SearchApiDataType(
  *   id = "typesense_float",
  *   label = @Translation("Typesense: float"),
- *   description = @Translation("A float"),
+ *   description = @Translation("Floating point / decimal numbers."),
  *   fallback_type = "decimal"
  * )
  */

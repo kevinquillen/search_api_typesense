@@ -10,7 +10,7 @@ use Drupal\search_api\DataType\DataTypePluginBase;
  * @SearchApiDataType(
  *   id = "typesense_bool",
  *   label = @Translation("Typesense: bool"),
- *   description = @Translation("A boolean"),
+ *   description = @Translation("A boolean type."),
  *   fallback_type = "boolean"
  * )
  */

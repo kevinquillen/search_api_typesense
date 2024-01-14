@@ -9,6 +9,7 @@ use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\StringTranslation\ByteSizeMarkup;
+use Drupal\search_api\Item\Field;
 use Drupal\search_api\Plugin\PluginFormTrait;
 use Drupal\search_api\Utility\DataTypeHelperInterface;
 use Drupal\search_api\Utility\FieldsHelperInterface;
@@ -587,10 +588,10 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
    */
   public function removeIndex($index) {
     if ($index instanceof IndexInterface) {
-      $index = $index->getProcessor('typesense_schema')->getConfiguration()['schema']['name'];
+      //$index = $index->getProcessor('typesense_schema')->getConfiguration()['schema']['name'];
     }
     try {
-      $this->typesense->dropCollection($index);
+      $this->typesense->dropCollection($index->id());
     }
     catch (SearchApiTypesenseException $e) {
       $this->logger->error($e->getMessage());
@@ -680,16 +681,30 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
       $typesense_fields = [];
 
       if (empty($index_fields)) {
-        $typesense_fields[] = [
-          "name" => "id",
-          "type" => "int64",
-          "facet" => FALSE,
-          "optional" => FALSE,
-          "index" => TRUE,
-          "sort" => TRUE,
-          "infix" => FALSE,
-          "locale" => "",
-        ];
+        $datasources = $index->getDatasources();
+
+        foreach ($datasources as $datasource) {
+          $field = new Field($index, $datasource->getEntityTypeId() . '_uuid');
+          $field->setType('typesense_string');
+          $field->setPropertyPath('uuid');
+          $field->setDatasourceId($datasource->getPluginId());
+          $field->setLabel('UUID');
+          $index->addField($field);
+
+          $typesense_fields[] = [
+            "name" => $datasource->getEntityTypeId() . '_uuid',
+            "type" => "string",
+            "facet" => FALSE,
+            "optional" => FALSE,
+            "index" => TRUE,
+            "sort" => FALSE,
+            "infix" => FALSE,
+            "locale" => "",
+          ];
+        }
+
+        $index->save();
+        $this->messenger()->addStatus($this->t('Default index field UUID provided for all selected datasources. Please proceed to add more fields to the index and update the Typesense schema on the Processors tab.'));
       }
 
       $collection_name = $index->id();
@@ -700,13 +715,11 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
         'fields' => $typesense_fields,
       ];
 
-      $schema['default_sorting_field'] = $default_sorting_field ?? 'id';
-
       $this->typesense->createCollection($schema);
     } catch (SearchApiTypesenseException $e) {
       $this->logger->error($e->getMessage());
-      $this->messenger()->addError($this->t('Unable to add index @index.', [
-        '@index' => $collection_name,
+      $this->messenger()->addError($this->t('Unable to add the index @index.', [
+        '@index' => $index->label(),
       ]));
     }
   }
@@ -756,7 +769,7 @@ class SearchApiTypesenseBackend extends BackendPluginBase implements PluginFormI
     try {
       if ($this->indexFieldsUpdated($index)) {
         $index->reindex();
-        $this->removeIndex($index->getProcessor('typesense_schema')->getConfiguration()['schema']['name']);
+        //$this->removeIndex($index->getProcessor('typesense_schema')->getConfiguration()['schema']['name']);
         $this->syncIndexesAndCollections();
       }
     }

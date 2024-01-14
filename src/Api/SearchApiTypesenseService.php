@@ -378,26 +378,13 @@ class SearchApiTypesenseService implements SearchApiTypesenseServiceInterface {
       $value = reset($value);
     }
 
-    switch ($type) {
-      case 'typesense_bool':
-        $value = (bool) $value;
-        break;
-
-      case 'typesense_float':
-        $value = (float) $value;
-        break;
-
-      case 'typesense_int32':
-      case 'typesense_int64':
-        $value = (int) $value;
-        break;
-
-      case 'typesense_string':
-        $value = (string) $value;
-        break;
-    }
-
-    return $value;
+    return match($type) {
+      'typesense_bool' => (bool) $value,
+      'typesense_float' => (float) $value,
+      'typesense_int32', 'typesense_int64' => (int) $value,
+      'typesense_string' => (string) $value,
+      default => $value
+    };
   }
 
 }

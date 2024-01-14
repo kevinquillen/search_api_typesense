@@ -10,7 +10,7 @@ use Drupal\search_api\DataType\DataTypePluginBase;
  * @SearchApiDataType(
  *   id = "typesense_int32",
  *   label = @Translation("Typesense: int32"),
- *   description = @Translation("A 32 bit integer."),
+ *   description = @Translation("A 32 bit integer up to 2,147,483,647."),
  *   fallback_type = "integer"
  * )
  */

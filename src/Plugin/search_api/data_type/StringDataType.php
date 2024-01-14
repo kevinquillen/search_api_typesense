@@ -10,7 +10,7 @@ use Drupal\search_api\DataType\DataTypePluginBase;
  * @SearchApiDataType(
  *   id = "typesense_string",
  *   label = @Translation("Typesense: string"),
- *   description = @Translation("A string"),
+ *   description = @Translation("A string value."),
  *   fallback_type = "string"
  * )
  */
